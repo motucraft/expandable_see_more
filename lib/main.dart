@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ExpandableWidget(
+                  ExpandableSeeMore(
                     child: Text('Some Text. ' * 10),
                   ),
                   const Divider(height: 30, color: Colors.black, thickness: 1),
@@ -43,22 +43,20 @@ class MyApp extends StatelessWidget {
                         );
                       },
                     );
-                    return ExpandableWidget(
+                    return ExpandableSeeMore(
                       completer: imageLoadCompleter.future,
-                      child: SingleChildScrollView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        child: Column(
-                          children: [
-                            child,
-                            const Text('No Baseball, No Life.',
-                                style: TextStyle(fontSize: 24)),
-                          ],
-                        ),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          child,
+                          const Text('No Baseball, No Life.',
+                              style: TextStyle(fontSize: 24)),
+                        ],
                       ),
                     );
                   }),
                   const Divider(height: 30, color: Colors.black, thickness: 1),
-                  ExpandableWidget(
+                  ExpandableSeeMore(
                     child: Text('Some Text. ' * 200),
                   ),
                 ],
@@ -71,15 +69,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ExpandableWidget extends HookWidget {
+class ExpandableSeeMore extends HookWidget {
   final double collapsedHeight;
   final Widget child;
   final Future<void>? completer;
 
-  const ExpandableWidget({
+  const ExpandableSeeMore({
     super.key,
     required this.child,
-    this.collapsedHeight = 150.0,
+    this.collapsedHeight = 100.0,
     this.completer,
   });
 
@@ -95,6 +93,7 @@ class ExpandableWidget extends HookWidget {
         if (completer != null) {
           await completer;
         }
+
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final box =
               contentKey.currentContext?.findRenderObject() as RenderBox?;
@@ -107,69 +106,70 @@ class ExpandableWidget extends HookWidget {
       return null;
     }, [child]);
 
+    final maxHeight = isExpandable.value
+        ? (isExpanded.value ? double.infinity : collapsedHeight)
+        : double.infinity;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedSize(
-          duration: const Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 300),
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: isExpandable.value
-                    ? (isExpanded.value ? double.infinity : collapsedHeight)
-                    : double.infinity),
-            child: Stack(
-              children: [
-                Container(
-                  key: contentKey,
-                  child: child,
-                ),
-                if (isExpandable.value && !isExpanded.value)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withOpacity(0),
-                            Colors.white.withOpacity(0.2),
-                            Colors.white.withOpacity(0.4),
-                            Colors.white.withOpacity(0.6),
-                            Colors.white.withOpacity(0.8),
-                            Colors.white.withOpacity(1.0),
-                          ],
-                        ),
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: ClipRect(
+              child: Stack(
+                children: [
+                  Container(
+                    key: contentKey,
+                    child: child,
+                  ),
+                  if (isExpandable.value && !isExpanded.value)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.white.withOpacity(0),
+                                  Colors.white.withOpacity(0.5),
+                                  Colors.white.withOpacity(1.0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        if (isExpandable.value)
-          Align(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: () {
-                isExpanded.value = !isExpanded.value;
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  isExpanded.value ? 'See Less' : 'See More',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                ],
               ),
             ),
           ),
+        ),
+        if (isExpandable.value) _button(context, isExpanded),
       ],
+    );
+  }
+
+  Widget _button(BuildContext context, ValueNotifier<bool> isExpanded) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: () => isExpanded.value = !isExpanded.value,
+        child: Text(
+          isExpanded.value ? 'Close' : 'See More',
+          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: Colors.blue,
+              ),
+        ),
+      ),
     );
   }
 }
