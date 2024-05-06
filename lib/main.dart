@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
                       final imageLoadCompleter = Completer();
                       final image = CachedNetworkImage(
                         imageUrl: 'https://picsum.photos/id/197/800/600',
-                        imageBuilder: (context, imageProvider) {
+                        imageBuilder: (_, imageProvider) {
                           if (!imageLoadCompleter.isCompleted) {
                             imageLoadCompleter.complete();
                           }
@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
                       final imageLoadCompleter1 = Completer();
                       final image1 = CachedNetworkImage(
                         imageUrl: 'https://picsum.photos/id/237/800/600',
-                        imageBuilder: (context, imageProvider) {
+                        imageBuilder: (_, imageProvider) {
                           if (!imageLoadCompleter1.isCompleted) {
                             imageLoadCompleter1.complete();
                           }
@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
                       final imageLoadCompleter2 = Completer();
                       final image2 = CachedNetworkImage(
                         imageUrl: 'https://picsum.photos/id/381/800/600',
-                        imageBuilder: (context, imageProvider) {
+                        imageBuilder: (_, imageProvider) {
                           if (!imageLoadCompleter2.isCompleted) {
                             imageLoadCompleter2.complete();
                           }
